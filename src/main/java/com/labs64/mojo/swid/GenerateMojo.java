@@ -61,6 +61,9 @@ public class GenerateMojo extends AbstractSwidMojo {
     @Parameter(property = "swid.extension", required = false, defaultValue = "swidtag")
     private String extension;
 
+    private String defaultRegId;
+    private String defaultName;
+
     /**
      * Specifies product name.
      * 
@@ -322,7 +325,7 @@ public class GenerateMojo extends AbstractSwidMojo {
 
         // output resulting object
         final String fileName = SwidUtils.generateSwidFileName(
-                getDefaultRegId().getRegid(),
+                defaultRegId,
                 getProject().getArtifactId(),
                 version,
                 extension);
@@ -425,23 +428,8 @@ public class GenerateMojo extends AbstractSwidMojo {
         return domain_creation_date;
     }
 
-    private RegId getDefaultRegId() {
-        final RegId regid = new RegId();
-
-        regid.setName(getProject().getOrganization() == null ?
-                getProject().getGroupId() : getProject().getOrganization().getName());
-
-        final String url = getProject().getOrganization() == null ?
-                getProject().getUrl() : getProject().getOrganization().getUrl();
-        final String reverseDomainName = StringUtils.isBlank(url) ?
-                getProject().getGroupId() : SwidUtils.revertDomainName(url);
-        regid.setRegid(SwidUtils.generateRegId(getDomainDate(), reverseDomainName));
-
-        return regid;
-    }
-
     private void prepareMandatoryElements() {
-        final RegId defaultRegId = getDefaultRegId();
+        calculateDefaultRegId();
 
         // entities
         if (entities == null) {
@@ -452,7 +440,7 @@ public class GenerateMojo extends AbstractSwidMojo {
             roles.add("softwareCreator");
             roles.add("tagCreator");
             roles.add("licensor");
-            entities.add(new Entity(defaultRegId.getName(), defaultRegId.getRegid(), roles));
+            entities.add(new Entity(defaultName, defaultRegId, roles));
         }
 
         if (evidence == null) {
@@ -466,6 +454,17 @@ public class GenerateMojo extends AbstractSwidMojo {
         if (metadata == null) {
             metadata = new ArrayList();
         }
+    }
+
+    private void calculateDefaultRegId() {
+        final String url = getProject().getOrganization() == null ?
+                getProject().getUrl() : getProject().getOrganization().getUrl();
+        final String reverseDomainName = StringUtils.isBlank(url) ?
+                getProject().getGroupId() : SwidUtils.revertDomainName(url);
+
+        defaultName = getProject().getOrganization() == null ?
+                getProject().getGroupId() : getProject().getOrganization().getName();
+        defaultRegId = SwidUtils.generateRegId(getDomainDate(), reverseDomainName);
     }
 
 }

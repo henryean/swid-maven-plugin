@@ -6,14 +6,6 @@ public class Evidence {
     private XMLGregorianCalendar date;
     private String deviceId;
 
-    public Evidence() {
-    }
-
-    public Evidence(XMLGregorianCalendar date, String deviceId) {
-        this.date = date;
-        this.deviceId = deviceId;
-    }
-
     public XMLGregorianCalendar getDate() {
         return date;
     }
